@@ -1,0 +1,8 @@
+os
+base64
+requests
+secrets
+hashlib
+re
+dotenv
+nltk.stem
