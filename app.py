@@ -13,7 +13,7 @@ lookforward = 5
 
 code_verifier, code_challenge = pl.generate_code_verifier_and_challenge()
 
-auth_link = pl.authorization_link(client_id, code_challenge)
+auth_link = pl.authorization_link(client_id, code_challenge, redirect_uri)
 
 
 
