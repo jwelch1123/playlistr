@@ -7,7 +7,10 @@ import re
 from dotenv import load_dotenv, find_dotenv 
 from nltk.stem import PorterStemmer
 
+#GLOBAL VARIABLES
 load_dotenv(find_dotenv())
+redirect_uri = 'http://127.0.0.1:8050/'
+
 
 
 def generate_code_verifier_and_challenge():
@@ -17,11 +20,9 @@ def generate_code_verifier_and_challenge():
     return code_verifier, code_challenge
 
 
-def grantaccess_tokenretreive(client_id):
-    
-    code_verifier, code_challenge = generate_code_verifier_and_challenge()
+def authorization_link(client_id, code_challenge, redirect_uri=redirect_uri):
 
-    redirect_uri = 'http://localhost:8080/'
+    #redirect_uri = 'http://127.0.0.1:8050/'
     scope = 'playlist-modify-private%20playlist-modify-public%20ugc-image-upload'  # "Space"-separated list of scopes
 
     auth_url = "https://accounts.spotify.com/authorize?"\
@@ -30,17 +31,16 @@ def grantaccess_tokenretreive(client_id):
                 + f"&redirect_uri={redirect_uri}"\
                 + f"&scope={scope}"\
                 + f"&code_challenge_method=S256&code_challenge={code_challenge}"
-
-    print(f"Please go to this URL and allow access, copy the page that opens:\n{auth_url}")
-
-    authorization_code = input("Paste the url you were redirected to:\n")
-    authorization_code = re.sub("http:\/\/localhost:8080\/\?code=","",authorization_code)
     
-    
+    return auth_url
+
+def obtain_pkce_token(client_id, authorization_code, code_verifier, redirect_uri=redirect_uri):
+
     token_url = "https://accounts.spotify.com/api/token"
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
+    #redirect_uri = "http://127.0.0.1:8050/" # move this to a global variable
     data = {
         "client_id": client_id,
         "grant_type": "authorization_code",
@@ -49,6 +49,23 @@ def grantaccess_tokenretreive(client_id):
         "code_verifier": code_verifier,
     }
     pkce_token_json = requests.post(token_url, headers=headers, data=data).json()
+    return pkce_token_json
+
+
+def grantaccess_tokenretreive(client_id):
+    
+    code_verifier, code_challenge = generate_code_verifier_and_challenge()
+
+    auth_url = authorization_link(client_id, code_challenge)
+
+    print(f"Please go to this URL and allow access, copy the page that opens:\n{auth_url}")
+    authorization_code = input("Paste the url you were redirected to:\n")
+    if authorization_code == "":
+        raise ValueError("Error: No authorization code provided. Please try again.")
+    authorization_code = re.sub("^.*code=","",authorization_code)
+    
+    pkce_token_json = obtain_pkce_token(client_id, authorization_code, code_verifier)
+    
     
     try:
         pkce_token = pkce_token_json['access_token']
@@ -71,6 +88,11 @@ def get_search_token(client_id, client_secret):
         return token
     else:
         ValueError("Error: Something went wrong", response.text)
+
+
+def get_user_info(token):
+    response = requests.get("https://api.spotify.com/v1/me", headers={"Authorization": f"Bearer {token}"})
+    return response.json()
 
 
 def get_text():
@@ -262,15 +284,15 @@ def main(query = None, spotify_search_limit=50, lookforward=5):
 
 
     ''' Control failing vs working phrase'''
-    track_paths = [key for key in matching_tracks.keys() if matching_tracks[key] is not None]   
-    #track_paths = [key for key in success_path.keys() if success_path[key] is not None]
+    #track_paths = [key for key in matching_tracks.keys() if matching_tracks[key] is not None]   
+    track_paths = [key for key in success_path.keys() if success_path[key] is not None]
     #track_paths = [key for key in Failing_phrase.keys() if Failing_phrase[key] is not None]
 
     print("Assembling the message from titles...")
     identified_path = recursive_chain(possible_list=track_paths, end_node=len(search_words))
     identified_path.sort(key=lambda x: x[0])
     
-    print(identified_path)
+    #print(identified_path)
 
     if identified_path[0][0] == "terminated at":
         raise ValueError(f"Unable to assemble the phrase. The longest path found ended at index {identified_path[0][1]}, the token not found was: \"{search_words[identified_path[0][1]]}\"")
@@ -278,8 +300,7 @@ def main(query = None, spotify_search_limit=50, lookforward=5):
     
     pkce_token = grantaccess_tokenretreive(client_id)
 
-    user_info = requests.get("https://api.spotify.com/v1/me", headers={"Authorization": f"Bearer {pkce_token}"})
-    user_id = user_info.json()['id']
+    user_id = get_user_info(pkce_token)['id']
 
     name = input("Enter playlist name: ")
     description = input("Enter playlist description: ")
