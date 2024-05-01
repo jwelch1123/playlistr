@@ -16,9 +16,9 @@ code_verifier, code_challenge = pl.generate_code_verifier_and_challenge()
 auth_link = pl.authorization_link(client_id, code_challenge)
 
 
-# need to trigger pkce flow so I can insert the link into the button
 
 app = Dash(__name__)
+server = app.server
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
