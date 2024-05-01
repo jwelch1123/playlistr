@@ -126,7 +126,7 @@ def submit_message(n_clicks, value, auth_code):
     State('submit', 'children'))
 def update_status(n_intervals, n_clicks, err, submit_text):
     if (n_clicks == 0) or (err) or (submit_text != "Submit"):
-        return ""
+        return " "
 
     status_messages = ["Artist Collaboration underway", 
                        "Harmonizing syllables with cymbals", 
