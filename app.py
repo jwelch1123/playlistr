@@ -7,9 +7,9 @@ from dash import Dash, html, dcc, callback, Input, Output, State, no_update
 load_dotenv(find_dotenv())
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
+redirect_uri = os.getenv("redirect_uri")
 spotify_search_limit = 50
 lookforward = 5
-redirect_uri = "http://127.0.0.1:8050/"
 
 code_verifier, code_challenge = pl.generate_code_verifier_and_challenge()
 

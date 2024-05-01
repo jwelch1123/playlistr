@@ -9,7 +9,7 @@ from nltk.stem import PorterStemmer
 
 #GLOBAL VARIABLES
 load_dotenv(find_dotenv())
-redirect_uri = 'http://127.0.0.1:8050/'
+redirect_uri = 'http://localhost:8080/'
 
 
 
