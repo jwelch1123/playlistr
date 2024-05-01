@@ -1,11 +1,5 @@
-os
-base64
-urllib
 gunicorn
 requests
-secrets
-hashlib
-re
 dotenv
 nltk.stem
 dash
