@@ -1,5 +1,5 @@
 gunicorn
 requests
 python-dotenv
-nltk.stem
+nltk
 dash
