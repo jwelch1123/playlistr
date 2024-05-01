@@ -66,7 +66,7 @@ def enable_textarea(data):
 @app.callback(
         [Output('submit','children'),
          Output('submit-button','href'),
-         Output('err_message','children', allow_duplicate=True)],
+         Output('err_message','children', allow_duplicate=True, prevent_initial_call=True)],
         Input('submit','n_clicks'),
         State('message-input', 'value'),
         State('auth_code', 'data'))
@@ -110,7 +110,7 @@ def submit_message(n_clicks, value, auth_code):
     return "Playlist Available", playlist_url, no_update
 
 @app.callback(
-    Output('err_message', 'children', allow_duplicate=True),
+    Output('err_message', 'children', allow_duplicate=True, prevent_initial_call=True),
     Input('submit', 'n_clicks'))
 def clear_error(n_clicks):
     if n_clicks:
