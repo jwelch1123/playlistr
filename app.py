@@ -30,6 +30,10 @@ app.layout = html.Div([
            href=auth_link,
            style={'display': 'inline-block'}),
     html.Br(), html.Br(),
+    dcc.Input(id="message-title", placeholder="Enter the message Title", style={"width": "30%"}, disabled=True),
+    html.Br(),
+    dcc.Input(id="message-description", placeholder="Enter the message Description", style={"width": "30%"}, disabled=True),
+    html.Br(),
     dcc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "30%"}, disabled=True),
     html.Br(),
     html.Div(id="status", children=""),
@@ -69,9 +73,11 @@ def enable_textarea(data):
          Output('err_message','children')],#, allow_duplicate=True)],
         Input('submit','n_clicks'),
         State('message-input', 'value'),
-        State('auth_code', 'data'),)
+        State('auth_code', 'data'),
+        State('message-title', 'value'),
+        State('message-description', 'value'))
         #prevent_initial_call=True)
-def submit_message(n_clicks, value, auth_code):
+def submit_message(n_clicks, value, auth_code, title, description):
     # aborting if the button has already been clicked
     # or the message value is empty
     if n_clicks > 1 or not value:
@@ -94,8 +100,8 @@ def submit_message(n_clicks, value, auth_code):
 
         user_id = pl.get_user_info(pkce_token)['id']
 
-        name = "A message for you"
-        description = "A playlist generated from a message"
+        name = title
+        description = description
 
         playlist_response = pl.create_playlist(user_id, name, description, pkce_token)
         playlist_id = playlist_response['id']
