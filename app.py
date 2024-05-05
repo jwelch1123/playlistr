@@ -70,7 +70,7 @@ def enable_textarea(data):
         [Output('submit','children'),
          Output('submit-button','href'),
          Output('message-title', 'style'),
-         Output('err_message','children')],#, allow_duplicate=True)],
+         Output('err_message','children')],
         Input('submit','n_clicks'),
         State('message-input', 'value'),
         State('auth_code', 'data'),
@@ -119,13 +119,6 @@ def submit_message(n_clicks, value, auth_code, title, description):
 
     return "Playlist Available", playlist_url, {"color":"green"}, no_update
 
-#@app.callback(
-#    Output('err_message', 'children', allow_duplicate=True),
-#    Input('submit', 'n_clicks'),
-#    prevent_initial_call=True)
-#def clear_error(n_clicks):
-#    if n_clicks:
-#        return ""
 
 @app.callback(
     Output('status', 'children'),
@@ -152,10 +145,6 @@ def update_status(n_intervals, n_clicks, err, submit_text):
                        "Jeez are you trying to send a book or something?",]
 
     return "Working on: " + status_messages[n_intervals % len(status_messages)]
-
-#TODO
- # venv and requirements
- # weird 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
