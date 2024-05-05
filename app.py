@@ -70,6 +70,7 @@ def enable_textarea(data):
 @app.callback(
         [Output('submit','children'),
          Output('submit-button','href'),
+         Output('message-title', 'style'),
          Output('err_message','children')],#, allow_duplicate=True)],
         Input('submit','n_clicks'),
         State('message-input', 'value'),
@@ -81,7 +82,7 @@ def submit_message(n_clicks, value, auth_code, title, description):
     # aborting if the button has already been clicked
     # or the message value is empty
     if n_clicks > 1 or not value:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     try:
         token = pl.get_search_token(client_id, client_secret)
@@ -93,7 +94,7 @@ def submit_message(n_clicks, value, auth_code, title, description):
         message_uris = [matching_tracks[edge][2] for edge in identified_path]
 
         if identified_path[0][0] == "terminated at":
-            return no_update, no_update, f"Unable to assemble the phrase. The longest path found ended at index {identified_path[0][1]}, the word not found was: \"{search_words[identified_path[0][1]]}\""
+            return no_update, no_update, no_update, f"Unable to assemble the phrase. The longest path found ended at index {identified_path[0][1]}, the word not found was: \"{search_words[identified_path[0][1]]}\""
 
         pkce_token_json = pl.obtain_pkce_token(client_id, auth_code, code_verifier, redirect_uri)
         pkce_token = pkce_token_json['access_token']
@@ -111,10 +112,13 @@ def submit_message(n_clicks, value, auth_code, title, description):
 
         pl.add_songs_to_playlist(message_uris, playlist_id, pkce_token)
         pl.playlist_img(playlist_id, pkce_token)
-    except:
-        return no_update, no_update, "An error occurred while trying to generate the playlist. Please try again."
+    except Exception as e:
+        print("*"*50)
+        print(e)
+        return no_update, no_update, no_update, "An error occurred while trying to generate the playlist. Please try again."
 
-    return "Playlist Available", playlist_url, no_update
+
+    return "Playlist Available", playlist_url, {"color":"green"}, no_update
 
 #@app.callback(
 #    Output('err_message', 'children', allow_duplicate=True),
@@ -132,7 +136,7 @@ def submit_message(n_clicks, value, auth_code, title, description):
     State('submit', 'children'))
 def update_status(n_intervals, n_clicks, err, submit_text):
     if (n_clicks == 0) or (err) or (submit_text != "Submit"):
-        return " "
+        return ""
 
     status_messages = ["Artist Collaboration underway", 
                        "Harmonizing syllables with cymbals", 
@@ -148,7 +152,7 @@ def update_status(n_intervals, n_clicks, err, submit_text):
                        "Usually it doesn't take this long I swear",
                        "Jeez are you trying to send a book or something?",]
 
-    return status_messages[n_intervals % len(status_messages)]
+    return "Working on: " + status_messages[n_intervals % len(status_messages)]
 
 #TODO
  # venv and requirements
