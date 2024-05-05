@@ -23,7 +23,7 @@ server = app.server
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     dcc.Store(id="auth_code"),
-    dcc.Interval(id="status_interval", interval=10000, n_intervals=0), # 10 seconds
+    dcc.Interval(id="status_interval", interval=7000, n_intervals=0), # 7 seconds
     html.H1("Playlistr"),
     html.Br(), html.Br(),
     html.A(html.Button("Sign in with Spotify", id="sign_in", n_clicks=0), 
@@ -31,16 +31,15 @@ app.layout = html.Div([
            style={'display': 'inline-block'}),
     html.Br(), html.Br(),
     dcc.Input(id="message-title", placeholder="Enter the message Title", style={"width": "30%"}, disabled=True),
-    html.Br(),
+    html.Br(), html.Br(),
     dcc.Input(id="message-description", placeholder="Enter the message Description", style={"width": "30%"}, disabled=True),
-    html.Br(),
+    html.Br(), html.Br(),
     dcc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "30%"}, disabled=True),
     html.Br(),
     html.Div(id="status", children=""),
     html.Br(),
     html.A(html.Button("Submit", id="submit", n_clicks=0, disabled=True),
-           id="submit-button",
-           style={'display': 'inline-block'}),
+           id="submit-button", style={'display': 'inline-block'}),
     html.Br(), html.Br(),
     html.Div(id="err_message", children="", style={"color": "red"}),
     ],
