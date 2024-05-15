@@ -34,13 +34,14 @@ def authorization_link(client_id, code_challenge, redirect_uri=redirect_uri):
     
     return auth_url
 
+
 def obtain_pkce_token(client_id, authorization_code, code_verifier, redirect_uri=redirect_uri):
 
     token_url = "https://accounts.spotify.com/api/token"
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    #redirect_uri = "http://127.0.0.1:8050/" # move this to a global variable
+
     data = {
         "client_id": client_id,
         "grant_type": "authorization_code",
@@ -137,7 +138,7 @@ def match_phrase(url, headers, query, search_rounds=10, debug=False):
                 return None
 
         try:
-            returned_songs = return_song(requests.get(returned_songs["tracks"]["next"], headers=headers), query)            
+            returned_songs = return_song(requests.get(returned_songs["tracks"]["next"], headers=headers))            
         except:
             return None
         
@@ -183,6 +184,25 @@ def search_songs(search_words, token, spotify_search_limit, lookforward, debug=F
             end_idx -= 1
     
     return matching_tracks
+
+
+def search_songs_app(search_phrase, token, spotify_search_limit):
+    
+    url = "https://api.spotify.com/v1/search?q={"\
+        +search_phrase\
+        +"}&market=US&type=track&limit="\
+        +str(spotify_search_limit)
+    
+    headers = {"Authorization": "Bearer "+token,}
+
+    response = requests.get(url, headers=headers)
+    return return_song(response)
+
+
+def next_page(uri, token):
+    headers = {"Authorization": "Bearer "+token,}
+    response = requests.get(uri, headers=headers)
+    return return_song(response)
 
 
 def recursive_chain(possible_list, end_node, start_node = 0):
