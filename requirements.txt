@@ -3,4 +3,4 @@ requests
 python-dotenv
 nltk
 dash
-dasp-bootstrap-components
+dash-bootstrap-components
