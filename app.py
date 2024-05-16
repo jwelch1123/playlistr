@@ -40,52 +40,56 @@ app.layout = html.Div([
     html.Br(),
     dbc.Button("Sign in with Spotify", id="sign_in", n_clicks=0, style={'display': 'inline-block'}, href=auth_link),
     html.Br(), html.Br(),
-    dcc.Input(id="message-title", placeholder="Enter the message Title", style={"width": "30%"}, disabled=True),
-    html.Br(), html.Br(),
-    dcc.Input(id="message-description", placeholder="Enter the message Description", style={"width": "30%"}, disabled=True),
-    html.Br(), html.Br(),
-    dbc.Tabs(children=[
-        dbc.Tab(id = 'tab-pick', label="Pick and Choose", disabled=True, children=[
-            html.Br(),
-            dbc.Table(id="selected-tracks-table", children=[
-                html.Thead(html.Tr([html.Th(""), 
-                                    html.Th("Title", style={'color':'darkgrey'}), 
-                                    html.Th("Artist",style={'color':'darkgrey'}), 
-                                    html.Th("URI",style={"display":"none", 'color':'darkgrey'})])),
-                html.Tbody(id = 'selected-tracks', children=[])]),
-            html.Br(),
-            html.Div(
-                dbc.Button(children="Create Playlist", id="submit-pick", n_clicks=0, style={'display': 'inline-block'}, target="_blank"),
-                style={'textAlign':'right'}),
-            html.Br(), html.Br(),
-            html.Div([
-                dbc.Input(id="search", placeholder="Search for a song", style={"width": "30%", "display":"inline-block", "margin-right":"20px"}),
-                dbc.Button("Search", id="search-button", n_clicks=0, style={"display":"inline-block"})],
-                style={'width':'100%', 'textAlign':'center'}
-            ),
-            html.Br(), html.Br(),
-            dbc.Table(id="search-results-table", children=[
-                html.Thead(html.Tr([html.Th(""), 
-                                    html.Th("Title", style={'color':'darkgrey'}), 
-                                    html.Th("Artist", style={'color':'darkgrey'}), 
-                                    html.Th("URI", style={'color':'darkgrey', "display":"none"})])),
-                html.Tbody(id = "search-results-body", children=[])]),
-            html.Br(),
-            dcc.Store(id="next-page-uri"), # storing uri for the next page
-            html.Div(dbc.Button("Next Page", id="next-page", style={'align':'right'}), style={'textAlign':'right'}),
+    html.Div(id = "hidden-div", style={'opacity':'0.3', 'pointerEvents':'none'},
+        children=[
+        dcc.Input(id="message-title", placeholder="Enter the message Title", style={"width": "30%"}),
+        html.Br(), html.Br(),
+        dcc.Input(id="message-description", placeholder="Enter the message Description", style={"width": "30%"}),
+        html.Br(), html.Br(),
+        dbc.Tabs(children=[ 
+            dbc.Tab(id = 'tab-pick', label="Pick and Choose", children=[
+                html.Br(),
+                dbc.Table(id="selected-tracks-table", children=[
+                    html.Thead(html.Tr([html.Th(""), 
+                                        html.Th("Title", style={'color':'darkgrey'}), 
+                                        html.Th("Artist",style={'color':'darkgrey'}), 
+                                        html.Th("URI",style={"display":"none", 'color':'darkgrey'})])),
+                    html.Tbody(id = 'selected-tracks', children=[])]),
+                html.Br(),
+                html.Div(
+                    dbc.Button(children="Create Playlist", id="submit-pick", n_clicks=0, style={'display': 'inline-block'}, target="_blank"),
+                    style={'textAlign':'right'}),
+                html.Br(), html.Br(),
+                html.Div([
+                    dbc.Input(id="search", placeholder="Search for a song", style={"width": "30%", "display":"inline-block", "margin-right":"20px"}),
+                    dbc.Button("Search", id="search-button", n_clicks=0, style={"display":"inline-block"})],
+                    style={'width':'100%', 'textAlign':'center'}
+                ),
+                html.Br(), html.Br(),
+                dbc.Table(id="search-results-table", children=[
+                    html.Thead(html.Tr([html.Th(""), 
+                                        html.Th("Title", style={'color':'darkgrey'}), 
+                                        html.Th("Artist", style={'color':'darkgrey'}), 
+                                        html.Th("URI", style={'color':'darkgrey', "display":"none"})])),
+                    html.Tbody(id = "search-results-body", children=[])]),
+                html.Br(),
+                dcc.Store(id="next-page-uri"), # storing uri for the next page
+                html.Div(dbc.Button("Next Page", id="next-page", style={'align':'right'}), style={'textAlign':'right'}),
 
-        ]),
-        dbc.Tab(id='tab-auto', label="Auto-Solver", disabled=True, children=[
-            html.Br(),
-            dbc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "40%"}, disabled=True),
-            html.Br(),
-            html.Div(id="status", children=""),
-            html.Br(),
-            dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}, disabled=True),
-            html.Br(), html.Br(),
-            html.Div(id="err_message", children="", style={"color": "red"}),
-        ]),
-    ]), # end of tabs
+            ]),
+            dbc.Tab(id='tab-auto', label="Auto-Solver", children=[
+                html.Br(),
+                dbc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "40%"}),
+                html.Br(),
+                html.Div(id="status", children=""),
+                html.Br(),
+                dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}),
+                html.Br(), html.Br(),
+                html.Div(id="err_message", children="", style={"color": "red"}),
+            ]),        
+
+        ])# end of tabs
+        ]), # end of hidding div
     html.Div([
         "Made by ", 
         html.A("James Welch", href="https://github.com/jwelch1123",  target="_blank", style={'color': 'grey'}),
@@ -142,6 +146,25 @@ def get_code_store_pkce(search):
     return no_update
 
 @app.callback(
+    Output('hidden-div', 'style'),
+    Output('sign_in', 'style'),
+    Output('sign_in', 'disabled'),
+    Input('pkce_token', 'data'))
+def show_hidden_div(data):
+    """
+    Show the hidden div when the PKCE token is available.
+
+    Args:
+        data (str): The PKCE token.
+
+    Returns:
+        dict: The style properties to be applied to the hidden div.
+    """
+    if data:
+        return {'opacity':'1', 'pointerEvents':'auto'}, {'opacity':'0.5', 'pointerEvents':'none'}, True
+    return {'opacity':'0.5', 'pointerEvents':'none'}, no_update, False
+'''
+@app.callback(
         [Output('tab-pick', 'disabled'),
          Output('tab-auto', 'disabled'),
          Output('search', 'disabled'),
@@ -165,7 +188,7 @@ def enable_textarea(data):
     """
     is_disabled = not data
     return is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, not is_disabled
-
+'''
 # auto-solver
 @app.callback(
         [Output('submit','children'),
