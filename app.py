@@ -42,12 +42,28 @@ app.layout = html.Div([
     html.Br(), html.Br(),
     html.Div(id = "hidden-div", style={'opacity':'0.3', 'pointerEvents':'none'},
         children=[
-        dcc.Input(id="message-title", placeholder="Enter the message Title", style={"width": "30%"}),
-        html.Br(), html.Br(),
-        dcc.Input(id="message-description", placeholder="Enter the message Description", style={"width": "30%"}),
-        html.Br(), html.Br(),
-        dbc.Tabs(children=[ 
+        dbc.Tabs(children=[
+            dbc.Tab(id='tab-auto', label="Auto-Solver", children=[
+                html.Br(),
+                dcc.Input(id={'type':'message-title','index':2}, placeholder="Enter the message Title", style={"width": "30%"}),
+                html.Br(), html.Br(),
+                dcc.Input(id={'type':'message-description','index':2}, placeholder="Enter the message Description", style={"width": "30%"}),
+                html.Br(), html.Br(),
+                html.Br(),
+                dbc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "40%"}),
+                html.Br(),
+                html.Div(id="status", children=""),
+                html.Br(),
+                dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}),
+                html.Br(), html.Br(),
+                html.Div(id="err_message", children="", style={"color": "red"}),
+            ]), # end of auto-solver tab
             dbc.Tab(id = 'tab-pick', label="Pick and Choose", children=[
+                html.Br(),
+                dcc.Input(id={'type':'message-title','index':1}, placeholder="Enter the message Title", style={"width": "30%"}),
+                html.Br(), html.Br(),
+                dcc.Input(id={'type':'message-description','index':1}, placeholder="Enter the message Description", style={"width": "30%"}),
+                html.Br(), html.Br(),
                 html.Br(),
                 dbc.Table(id="selected-tracks-table", children=[
                     html.Thead(html.Tr([html.Th(""), 
@@ -75,19 +91,7 @@ app.layout = html.Div([
                 html.Br(),
                 dcc.Store(id="next-page-uri"), # storing uri for the next page
                 html.Div(dbc.Button("Next Page", id="next-page", style={'align':'right'}), style={'textAlign':'right'}),
-
-            ]),
-            dbc.Tab(id='tab-auto', label="Auto-Solver", children=[
-                html.Br(),
-                dbc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "40%"}),
-                html.Br(),
-                html.Div(id="status", children=""),
-                html.Br(),
-                dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}),
-                html.Br(), html.Br(),
-                html.Div(id="err_message", children="", style={"color": "red"}),
-            ]),        
-
+            ]) # end of pick and choose tab
         ])# end of tabs
         ]), # end of hidding div
     html.Div([
@@ -163,32 +167,7 @@ def show_hidden_div(data):
     if data:
         return {'opacity':'1', 'pointerEvents':'auto'}, {'opacity':'0.5', 'pointerEvents':'none'}, True
     return {'opacity':'0.5', 'pointerEvents':'none'}, no_update, False
-'''
-@app.callback(
-        [Output('tab-pick', 'disabled'),
-         Output('tab-auto', 'disabled'),
-         Output('search', 'disabled'),
-         Output('message-input', 'disabled'),
-         Output('message-title', 'disabled'),
-         Output('message-description', 'disabled'),
-         Output('submit', 'disabled'),
-         Output('sign_in', 'disabled')],
-        Input('pkce_token', 'data'))
-def enable_textarea(data):
-    """
-    Enable or disable a textarea based on the provided data.
 
-    Args:
-        data (str): Existance of the pkce token
-
-    Returns:
-        A tuple of boolean values indicating the disabled state of each textarea element.
-        The first 7 elements in the tuple represent the disabled state of the textarea elements,
-        and the last element represents the enabled state of the sign-in element.
-    """
-    is_disabled = not data
-    return is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, is_disabled, not is_disabled
-'''
 # auto-solver
 @app.callback(
         [Output('submit','children'),
@@ -198,8 +177,11 @@ def enable_textarea(data):
         Input('submit','n_clicks'),
         State('message-input', 'value'),
         State('pkce_token', 'data'),
-        State('message-title', 'value'),
-        State('message-description', 'value'))
+        #State('message-title', 'value'),
+        State({'type':'message-title','index':ALL},'value'),
+        State({'type':'message-description','index':ALL},'value'),
+        #State('message-description', 'value')
+        )
 def submit_message(n_clicks, value, pkce_token, title, description):
     """
     Callback function that is triggered when the 'submit' button is clicked.
@@ -294,6 +276,7 @@ def update_status(n_intervals, n_clicks, err, submit_text):
 
     return "Working on: " + status_messages[n_intervals % len(status_messages)]
 
+# pick and choose
 @app.callback(
         Output('search-results-body', 'children'),
         Output('next-page-uri', 'data'),
@@ -414,7 +397,6 @@ def select_song(n_clicks_add, n_clicks_remove, selected_tracks, search_results):
     else:
         return no_update
 
-# pick and choose
 @app.callback(
         Output('submit-pick', 'href'),
         Output('submit-pick', 'style'),
@@ -422,8 +404,11 @@ def select_song(n_clicks_add, n_clicks_remove, selected_tracks, search_results):
         Input('submit-pick', 'n_clicks'),
         State('selected-tracks', 'children'),
         State('pkce_token', 'data'),
-        State('message-title', 'value'),
-        State('message-description', 'value'))
+        #State('message-title', 'value'),
+        #State('message-description', 'value')
+        State({'type':'message-title','index':ALL},'value'),
+        State({'type':'message-description','index':ALL},'value')
+        )
 def submit_create_playlist(n_clicks, selected_tracks, pkce_token, title, description):
     """
     Submits the selected tracks to create a playlist.
