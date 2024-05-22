@@ -38,23 +38,23 @@ app.layout = html.Div([
     html.P("Welcome to Playlistr! Playlistr is a tool that allows you to create Spotify playlists based on a message or a list of songs. You can either pick and choose songs to add to your playlist or let Playlistr automatically generate a playlist based on a message you provide."),
     html.P("Sign into Spotify to get started."),
     html.Br(),
-    dbc.Button("Sign in with Spotify", id="sign_in", n_clicks=0, style={'display': 'inline-block'}, href=auth_link),
+    dbc.Button("Sign in with Spotify", id="sign_in", n_clicks=0, style={'display': 'inline-block', 'color':'DarkGreen'}, href=auth_link),
     html.Br(), html.Br(),
     html.Div(id = "hidden-div", style={'opacity':'0.3', 'pointerEvents':'none'},
         children=[
         dbc.Tabs(children=[
             dbc.Tab(id='tab-auto', label="Auto-Solver", children=[
                 html.Br(),
-                dcc.Input(id={'type':'message-title','index':2}, placeholder="Enter the message Title", style={"width": "30%"}),
+                dcc.Input(id={'type':'message-title','index':0}, placeholder="Enter the message Title", style={"width": "30%"}),
                 html.Br(), html.Br(),
-                dcc.Input(id={'type':'message-description','index':2}, placeholder="Enter the message Description", style={"width": "30%"}),
+                dcc.Input(id={'type':'message-description','index':0}, placeholder="Enter the message Description", style={"width": "30%"}),
                 html.Br(), html.Br(),
                 html.Br(),
                 dbc.Textarea(id="message-input", placeholder="Enter a message", style={"width": "40%"}),
                 html.Br(),
                 html.Div(id="status", children=""),
                 html.Br(),
-                dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}),
+                dbc.Button(children="Submit", id="submit", n_clicks=0, style={'display': 'inline-block'}, target="_blank"),
                 html.Br(), html.Br(),
                 html.Div(id="err_message", children="", style={"color": "red"}),
             ]), # end of auto-solver tab
@@ -133,14 +133,14 @@ def get_code_store_pkce(search):
         Exception: If an error occurs while obtaining the PKCE token.
     """
     if search:
-        print("search: ", search)
+        #print("search: ", search)
         params = urllib.parse.parse_qs(search[1:])
         auth_code = params.get('code', [''])[0]
         print(client_id, auth_code, code_verifier, redirect_uri)
 
         try:
             pkce_token_json = pl.obtain_pkce_token(client_id, auth_code, code_verifier, redirect_uri)
-            print("pkce_token_json: ", pkce_token_json)
+            #print("pkce_token_json: ", pkce_token_json)
             pkce_token = pkce_token_json['access_token']
         except:
             return no_update
@@ -203,6 +203,8 @@ def submit_message(n_clicks, value, pkce_token, title, description):
     print("submit message")
     if n_clicks > 1 or not value:
         return no_update, no_update, no_update, no_update
+    
+    choice_context = 0 # hard coding this to index of title and description
 
     try:
         token = pl.get_search_token(client_id, client_secret)
@@ -219,9 +221,9 @@ def submit_message(n_clicks, value, pkce_token, title, description):
         pkce_token = pkce_token
 
         user_id = pl.get_user_info(pkce_token)['id']
-
-        name = title if title else "Playlistr Message"
-        description = description if description else "Playlistr generated playlist, how cool is that?"
+        
+        name = title[choice_context] if title[choice_context] else "Playlistr Message"
+        description = description[choice_context] if description[choice_context] else "Playlistr generated playlist, how cool is that?"
 
         playlist_response = pl.create_playlist(user_id, name, description, pkce_token)
         playlist_id = playlist_response['id']
@@ -430,11 +432,13 @@ def submit_create_playlist(n_clicks, selected_tracks, pkce_token, title, descrip
         return "", {'display': 'inline-block'}, "Create Playlist"
 
     print("running the playlist creation")
-    print(n_clicks, selected_tracks, pkce_token,  title, description)
+    #print(n_clicks, selected_tracks, pkce_token,  title, description)
+
+    choice_context = 1 # hard coding this to index of title and description
 
     user_id = pl.get_user_info(pkce_token)['id']
-    name = title if title else "Playlistr Message"
-    description = description if description else "Playlistr generated playlist, how cool is that?"
+    name = title[choice_context] if title[choice_context] else "Playlistr Message"
+    description = description[choice_context] if description[choice_context] else "Playlistr generated playlist, how cool is that?"
     pkce_token = pkce_token
     
 
@@ -442,7 +446,7 @@ def submit_create_playlist(n_clicks, selected_tracks, pkce_token, title, descrip
     playlist_id = playlist_response['id']
     playlist_url = playlist_response['external_urls']['spotify']
 
-    message_uris = [track['props']['children'][2]['props']['children'] for track in selected_tracks]
+    message_uris = [track['props']['children'][3]['props']['children'] for track in selected_tracks]
 
     print("got uri list: ", message_uris)
     

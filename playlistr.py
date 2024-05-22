@@ -233,6 +233,7 @@ def create_playlist(user_id, name, description, token, public=False, collaborati
             "public": public, 
             "collaborative": collaborative
             }
+    #print("Creating playlist: ", headers, body)
     response = requests.post(url, headers=headers, json=body)
     
 
