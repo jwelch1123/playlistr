@@ -21,9 +21,7 @@ def generate_code_verifier_and_challenge():
 
 
 def authorization_link(client_id, code_challenge, redirect_uri=redirect_uri):
-
-    #redirect_uri = 'http://127.0.0.1:8050/'
-    scope = 'playlist-modify-private%20playlist-modify-public%20ugc-image-upload'  # "Space"-separated list of scopes
+    scope = 'ugc-image-upload%20playlist-modify-private%20playlist-modify-public'  # "Space"-separated list of scopes
 
     auth_url = "https://accounts.spotify.com/authorize?"\
                 + f"client_id={client_id}"\

@@ -136,7 +136,7 @@ def get_code_store_pkce(search):
         #print("search: ", search)
         params = urllib.parse.parse_qs(search[1:])
         auth_code = params.get('code', [''])[0]
-        print(client_id, auth_code, code_verifier, redirect_uri)
+        #print(client_id, auth_code, code_verifier, redirect_uri)
 
         try:
             pkce_token_json = pl.obtain_pkce_token(client_id, auth_code, code_verifier, redirect_uri)
@@ -177,10 +177,8 @@ def show_hidden_div(data):
         Input('submit','n_clicks'),
         State('message-input', 'value'),
         State('pkce_token', 'data'),
-        #State('message-title', 'value'),
         State({'type':'message-title','index':ALL},'value'),
         State({'type':'message-description','index':ALL},'value'),
-        #State('message-description', 'value')
         )
 def submit_message(n_clicks, value, pkce_token, title, description):
     """
@@ -389,10 +387,11 @@ def select_song(n_clicks_add, n_clicks_remove, selected_tracks, search_results):
         for idx, track in enumerate(selected_tracks):
             track = track['props']['children']
             table_rows.append(html.Tr(
-                [html.Td(track[0]['props']['children']), # song name
-                 html.Td(track[1]['props']['children']), # artist name
-                 html.Td(track[2]['props']['children'], style={"display":"none"}), # uri
-                 html.Td(html.Button("Remove", id={'type':'remove-song','index':idx}, n_clicks=0))])
+                [html.Td(dbc.Button("Remove", id={'type':'remove-song','index':idx}, n_clicks=0)),
+                 html.Td(track[1]['props']['children']), # song name
+                 html.Td(track[2]['props']['children']), # artist name
+                 html.Td(track[3]['props']['children'], style={"display":"none"}), # uri
+                 ])
                 )
         return table_rows
 
@@ -406,8 +405,6 @@ def select_song(n_clicks_add, n_clicks_remove, selected_tracks, search_results):
         Input('submit-pick', 'n_clicks'),
         State('selected-tracks', 'children'),
         State('pkce_token', 'data'),
-        #State('message-title', 'value'),
-        #State('message-description', 'value')
         State({'type':'message-title','index':ALL},'value'),
         State({'type':'message-description','index':ALL},'value')
         )
@@ -427,7 +424,7 @@ def submit_create_playlist(n_clicks, selected_tracks, pkce_token, title, descrip
         style (dict): The style properties to be applied to the submit button.
         text (str): The text to be displayed on the submit button.
     """
-    if (n_clicks == 0) or (len(selected_tracks) == 0):
+    if (n_clicks != 1) or (len(selected_tracks) == 0):
         print("fired no clicks or no tracks")
         return "", {'display': 'inline-block'}, "Create Playlist"
 
@@ -452,7 +449,10 @@ def submit_create_playlist(n_clicks, selected_tracks, pkce_token, title, descrip
     
 
     pl.add_songs_to_playlist(message_uris, playlist_id, pkce_token)
-    pl.playlist_img(playlist_id, pkce_token)
+    try:
+        pl.playlist_img(playlist_id, pkce_token)
+    except Exception as e:
+        print("error getting playlist image: ", e)
     print("made playlist and updating link")
 
     return playlist_url, {'display':'inline-block', "color":"green"}, "Playlist Available, click to view"
